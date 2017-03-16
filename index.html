@@ -6,11 +6,17 @@
 
 		<title>reveal.js</title>
 
+		<!--<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">-->
+
+		<link rel="stylesheet" href="css/local.css">
+
 		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/black.css">
+		<link rel="stylesheet" href="css/theme/night.css">
 
 		<!-- Theme used for syntax highlighting of code -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
+		<link rel="stylesheet" href="lib/css/solarized-dark.css">
+
+		<script src="https://use.fontawesome.com/ae435e3a95.js"></script>
 
 		<!-- Printing and PDF exports -->
 		<script>
@@ -24,8 +30,173 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
+				<section>
+					<h2>Elm: A Delightful Language For Writing Web Apps</h2>
+					<ul id="social-links">
+						<li><i class="fa fa-fw fa-twitter"></i><a href="https://twitter.com/petejohanson">@petejohanson</a></li>
+						<li><i class="fa fa-fw fa-github"></i><a href="https://github.com/petejohanson">@petejohanson</a></li>
+					</ul>
+					
+				</section>
+				<section>
+				  <section>
+				  	<img src="img/elephant-in-the-room.jpg" alt="The elephant in the room" width="740" height="457">
+				  </section>
+					<section>
+						<h2>Functional Programming</h2>
+					</section>
+					<section>
+						<h3>The Agreement</h3>
+						<span>If you hear me say 'monad', 'lens', or 'functor', you have my permission to throw food at me.</span>
+					</section>
+				</section>
+				<section>
+				  <section>
+				  	<h2>Hello, World</h2>
+				  	<pre><code data-trim data-noescape class="elm">
+import Html exposing (text)
+
+main =
+  text "Hello, World!"
+						</code></pre>
+				  </section>
+				  <section>
+				  	<pre><code data-trim data-noescape class="elm">
+import Html exposing (beginnerProgram, div, button, text)
+import Html.Events exposing (onClick)
+
+main =
+  beginnerProgram { model = 0, view = view, update = update }
+
+view model =
+  div []
+    [ button [ onClick Decrement ] [ text "-" ]
+    , div [] [ text (toString model) ]
+    , button [ onClick Increment ] [ text "+" ]
+    ]
+
+type Msg = Increment | Decrement
+
+update msg model =
+  case msg of
+    Increment -&gt;
+      model + 1
+
+    Decrement -&gt;
+      model - 1
+						</code></pre>
+				  </section>
+				</section>
+
+				<section>
+					<section>
+						<h3>The Elm Architecture</h3>
+					</section>
+
+					<section>
+						<h4>Model</h4>
+
+						<aside class="notes">
+							<ul>
+								<li>Source of truth for application state. <em>Not</em> the DOM.</li>
+								<li>Strongly typed, to avoid runtime errors.</li>
+							</ul>
+						</aside>
+
+				  	<pre><code data-trim data-noescape class="elm">
+type alias Model =
+    { position : Position
+    , drag : Maybe Drag
+    }
+						</code></pre>
+					</section>
+					
+					<section>
+						<h4>View Function</h4>
+
+						<aside class="notes">
+							<ul>
+								<li>State as input, outputs virtual DOM</li>
+								<li>Program reconciles virtual DOM diff after each render</li>
+								<li>Produced HTML can emit messages as a result of handling DOM events</li>
+							</ul>
+						</aside>
+
+				  	<pre><code data-trim data-noescape class="elm">
+view : Int -&gt; Html Msg
+view model =
+  div []
+    [ button [ onClick Decrement ] [ text "-" ]
+    , div [] [ text (toString model) ]
+    , button [ onClick Increment ] [ text "+" ]
+    ]
+						</code></pre>
+					</section>
+
+					<section>
+						<h4>Update Function</h4>
+
+						<aside class="notes">
+							<ul>
+								<li>Message union type defines the types of input to your business logic</li>
+								<li>Update function takes message, and current model state, and returns new model state</li>
+							</ul>
+						</aside>
+				  	<pre><code data-trim data-noescape>
+type Msg = Increment | Decrement
+
+update : Msg -&gt; Model -&gt; Model
+update msg model =
+  case msg of
+    Increment -&gt;
+      model + 1
+
+    Decrement -&gt;
+      model - 1
+						</code></pre>
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h2>Development Experience</h2>
+					</section>
+
+					<section>
+						<h3>Time Traveling Debugger</h3>
+
+						<img src="img/back-to-the-future.jpg" height="545" width="970" alt="Back To The Future"/>
+						<aside class="notes">
+							<ul>
+								<li>Possible because entire application state in model</li>
+								<li>UI state is directly mapped from application state</li>
+							</ul>
+						</aside>
+					</section>
+
+					<section>
+						<h3>Refactoring</h3>
+						<aside class="notes">
+							<p>Add a 'Reset' Message type!</p>
+						</aside>
+					</section>
+
+					<section>
+						<h3>Growth</h3>
+
+						<!-- TODO: Add an item showing reusable up/down UI -->
+						<aside class="notes">
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<h3>Links</h3>
+					<ul>
+						<li>Elm - <a href="http://elm-lang.org/">http//elm-lang.org/</a></li>
+						<li>Try Online - <a href="http://elm-lang.org/">http//elm-lang.org/try</a></li>
+					</ul>
+				</section>
 			</div>
 		</div>
 
