@@ -36,6 +36,22 @@
 					</ul>
 					
 				</section>
+
+				<section>
+					<section>
+						<h2>What is Elm?</h2>
+					</section>
+
+					<section>
+						<ul>
+							<li>Functional language the compiles to JavaScript</li>
+							<li class="fragment">The Elm Runtime to handle DOM updates, commands, and subscriptions</li>
+							<li class="fragment">Set of core libraries (virtual DOM, data types, etc)</li>
+							<li class="fragment">Tools for building and developing</li>
+						</ul>
+					</section>
+				</section>
+
 				<section>
 				  <section>
 				  	<img src="img/elephant-in-the-room.jpg" alt="The elephant in the room" width="740" height="457">
@@ -48,6 +64,7 @@
 						<span>If you hear me say 'monad', 'lens', or 'functor', you have my permission to throw food at me.</span>
 					</section>
 				</section>
+
 				<section>
 				  <section>
 				  	<h2>Hello, World</h2>
@@ -58,6 +75,7 @@ main =
   text "Hello, World!"
 						</code></pre>
 				  </section>
+
 				  <section>
 				  	<pre><code data-trim data-noescape class="elm">
 import Html exposing (beginnerProgram, div, button, text)
@@ -88,7 +106,92 @@ update msg model =
 
 				<section>
 					<section>
+						<h2>The Basics</h2>
+					</section>
+
+					<section>
+						<h4>Values</h4>
+						<pre><code data-trim data-noescape class="elm">
+1
+2 + 2
+"test"
+"Hello" ++ " world"
+						</code></pre>
+						<div class="fragment">
+							<h4>Lists</h4>
+							<pre><code data-trim data-noescape class="elm">[1,2,3]</code></pre>
+						</div>
+
+						<div class="fragment">
+							<h4>Union Types</h4>
+							<pre><code data-trim data-noescape class="elm">
+type Answer = Yes | No
+type TodoStatus = New | InProgress Int | Done
+type Maybe a = Nothing | Just a
+							</code></pre>
+						</div>
+					</section>
+
+					<section>
+						<h4>Records</h4>
+						<pre><code data-trim data-noescape class="elm">
+point =                         -- create a record
+  { x = 3, y = 4 }
+
+point.x                         -- access field
+
+List.map .x [point,{x=0,y=0}]   -- field access function
+
+{ point |                       -- update fields
+  x = point.x + 1,
+  y = point.y + 1
+}
+
+dist {x,y} =                    -- pattern matching on fields
+  sqrt (x^2 + y^2)
+						</code></pre>
+					</section>
+
+					<section>
+						<h4>Functions</h4>
+						<pre><code data-trim data-noescape class="elm">
+doubler : number -> number
+doubler value =
+  value * 2
+						</code></pre>
+					</section>
+
+					<section>
+						<h4>Multiple Parameters</h4>
+						<pre><code data-trim data-noescape class="elm">
+pow : number -> number -> number
+pow power value =
+  value ^ power
+						</code></pre>
+						<pre class="fragment"><code data-trim data-noescape class="elm">
+square : number -> number
+square = pow 2
+
+four = square 2
+						</code></pre>
+
+						<aside class="notes">
+							<ul>
+								<li>Always put 'data' last, allows for partial application</li>
+							</ul>
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<section>
 						<h3>The Elm Architecture</h3>
+
+						<aside class="notes">
+							<ul>
+								<li>Similar to Flux, or those familiar w/ React</li>
+							</ul>
+						</aside>
 					</section>
 
 					<section>
@@ -140,7 +243,7 @@ view model =
 								<li>Update function takes message, and current model state, and returns new model state</li>
 							</ul>
 						</aside>
-				  	<pre><code data-trim data-noescape>
+				  		<pre><code data-trim data-noescape class="elm">
 type Msg = Increment | Decrement
 
 update : Msg -&gt; Model -&gt; Model
@@ -152,6 +255,86 @@ update msg model =
     Decrement -&gt;
       model - 1
 						</code></pre>
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h2>Commands</h2>
+						<ul>
+							<li>Description of something to <em>do</em></li>
+							<li><em>Not</em> code that actually performs a task</li>
+							<li>Result of the task fed back in via update message</li>
+						</ul>
+					</section>
+
+					<section>
+						<h4>Roll My D20!</h4>
+						<pre><code data-trim data-noescape class="elm">
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model =
+  case msg of
+    Roll ->
+      (model, Random.generate NewFace (Random.int 1 20))
+
+    NewFace newFace ->
+      (Model newFace, Cmd.none)
+						</code></pre>
+					</section>
+
+					<section>
+						<h4>Creating The Command</h4>
+						<pre><code data-trim data-noescape class="elm">
+							Random.generate : (a -> msg) -> Random.Generator a -> Cmd msg
+						</code></pre>
+
+						<div class="fragment">
+
+							<h4>Describing our RNG</h4>
+							<pre><code data-trim data-noescape class="elm">
+							Random.int : Int -> Int -> Random.Generator Int
+						</code></pre>
+						</div>
+					</section>
+
+					<section>
+						<pre><code data-trim data-noescape class="elm">
+type Msg
+    = FocusOn String
+    | FocusResult (Result Dom.Error ())
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        FocusOn id ->
+            ( model, Dom.focus id |> Task.attempt FocusResult )
+
+        FocusResult result ->
+            -- handle success or failure here
+            case result of
+                Err (Dom.NotFound id) ->
+                    -- unable to find dom 'id'
+                Ok () ->
+                    -- successfully focus the dom
+						</code></pre>
+					</section>
+
+
+
+					<!-- TODO: Focus command example -->
+				</section>
+
+				<section>
+					<section>
+						<h2>Subscriptions</h2>
+					</section>
+
+					<!-- TODO: Show time subscription -->
+				</section>
+
+				<section>
+					<section>
+						<h2>JavaScript Interop</h2>
 					</section>
 				</section>
 
@@ -174,15 +357,47 @@ update msg model =
 
 					<section>
 						<h3>Refactoring</h3>
+
 						<aside class="notes">
 							<p>Add a 'Reset' Message type!</p>
 						</aside>
 					</section>
 
 					<section>
+						<div style="font-family: monospace; font-size: 16px; text-align: left; display: block; white-space: pre; background-color: rgb(39, 40, 34); padding: 2em;">Detected errors in 1 module.
+							<span style="color: rgb(211, 56, 211);">==================================== ERRORS ====================================</span>
+							<span style="color: rgb(213, 32, 12);"></span>
+							<span style="color: rgb(51, 187, 200);">
+-- MISSING PATTERNS ------------------------------ increment-decrement-reset.elm
+</span>
+							<span style="color: rgb(213, 32, 12);"></span>This `case` does not have branches for all possibilities.<span style="color: rgb(213, 32, 12);"></span>
+							<span style="color: rgb(154, 154, 154);">13|</span><span style="color: rgb(213, 32, 12);">&gt;</span><span style="color: rgb(154, 154, 154);">  case msg of</span>
+							<span style="color: rgb(154, 154, 154);">14|</span><span style="color: rgb(213, 32, 12);">&gt;</span><span style="color: rgb(154, 154, 154);">    Increment -&gt;</span>
+							<span style="color: rgb(154, 154, 154);">15|</span><span style="color: rgb(213, 32, 12);">&gt;</span><span style="color: rgb(154, 154, 154);">      model + 1</span>
+							<span style="color: rgb(154, 154, 154);">16|</span><span style="color: rgb(213, 32, 12);">&gt;</span><span style="color: rgb(154, 154, 154);">    Decrement -&gt;</span>
+							<span style="color: rgb(154, 154, 154);">17|</span><span style="color: rgb(213, 32, 12);">&gt;</span><span style="color: rgb(154, 154, 154);">      model - 1</span>
+							<span style="color: rgb(213, 32, 12);"></span>
+							You need to account for the following values:
+							<span style="color: rgb(213, 32, 12);"></span>
+							<span style="color: rgb(154, 154, 154);">    Main.Reset</span>
+							<span style="color: rgb(213, 32, 12);"></span>
+							Add a branch to cover this pattern!
+							<span style="color: rgb(213, 32, 12);"></span>
+							If you are seeing this error for the first time, check out these hints:
+							&lt;https://github.com/elm-lang/elm-compiler/blob/0.18.0/hints/missing-patterns.md&gt;
+							The recommendations about wildcard patterns and `Debug.crash` are important!
+							<span style="color: rgb(213, 32, 12);"></span>
+							<span style="color: rgb(213, 32, 12);"></span>
+						</div>
+					</section>
+
+					<section>
 						<h3>Growth</h3>
 
-						<!-- TODO: Add an item showing reusable up/down UI -->
+						<ul>
+							<li>Type system provides safety net</li>
+							<li>Stateless Components</li>
+						</ul>
 						<aside class="notes">
 						</aside>
 					</section>
