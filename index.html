@@ -221,6 +221,10 @@ dist {x,y} =
 dist { x = 2, y = 3 }
 						</code></pre>
 					</section>
+
+					<section>
+						<h1>null?</h1>
+					</section>
 				</section>
 
 				<section>
@@ -311,6 +315,12 @@ update msg model =
 
 					<section>
 						<h4>Roll My D20!</h4>
+
+						<aside class="notes">
+							<ul>
+								<li><em>update</em> function now returns updated model and possibly new commands to perform.</li>
+							</ul>
+						</aside>
 						<pre><code data-trim data-noescape class="elm">
 update : Msg -&gt; Model -&gt; (Model, Cmd Msg)
 update msg model =
@@ -421,6 +431,19 @@ subscriptions model =
 subscriptions : Model -&gt; Sub Msg
 subscriptions model =
   WebSocket.listen "ws://echo.websocket.org" NewMessage
+						</code></pre>
+					</section>
+
+					<section>
+						<h3>Hooked into toplevel program</h3>
+						<pre><code data-trim data-noescape class="elm">
+main =
+  Html.program
+    { init = init
+    , view = view
+    , update = update
+    , <strong>subscriptions = subscriptions</strong>
+    }
 						</code></pre>
 					</section>
 				</section>
