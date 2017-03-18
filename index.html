@@ -30,11 +30,12 @@
 			<div class="slides">
 				<section>
 					<h2>Elm: A Delightful Language For Writing Web Apps</h2>
+					<h4>Pete Johanson</h4>
 					<ul id="social-links">
 						<li><i class="fa fa-fw fa-twitter"></i><a href="https://twitter.com/petejohanson">@petejohanson</a></li>
 						<li><i class="fa fa-fw fa-github"></i><a href="https://github.com/petejohanson">@petejohanson</a></li>
 					</ul>
-					
+
 				</section>
 
 				<section>
@@ -61,11 +62,20 @@
 					</section>
 					<section>
 						<h3>The Agreement</h3>
-						<span>If you hear me say 'monad', 'lens', or 'functor', you have my permission to throw food at me.</span>
+						<div>If you hear me say 'monad', 'lens', or 'functor', you have my permission to...</div>
+
+						<div class="fragment">
+							<img src="img/shoe.gif"/>
+						</div>
 					</section>
 				</section>
 
 				<section>
+					<section>
+						<h2>Play Along</h2>
+						<a href="https://ellie-app.com/new">https://ellie-app.com/</a>
+					</section>
+
 				  <section>
 				  	<h2>Hello, World</h2>
 				  	<pre><code data-trim data-noescape class="elm">
@@ -146,16 +156,13 @@ List.map .x [point,{x=0,y=0}]   -- field access function
   x = point.x + 1,
   y = point.y + 1
 }
-
-dist {x,y} =                    -- pattern matching on fields
-  sqrt (x^2 + y^2)
 						</code></pre>
 					</section>
 
 					<section>
 						<h4>Functions</h4>
 						<pre><code data-trim data-noescape class="elm">
-doubler : number -> number
+doubler : number -&gt; number
 doubler value =
   value * 2
 						</code></pre>
@@ -164,12 +171,12 @@ doubler value =
 					<section>
 						<h4>Multiple Parameters</h4>
 						<pre><code data-trim data-noescape class="elm">
-pow : number -> number -> number
+pow : number -&gt; number -&gt; number
 pow power value =
   value ^ power
 						</code></pre>
 						<pre class="fragment"><code data-trim data-noescape class="elm">
-square : number -> number
+square : number -&gt; number
 square = pow 2
 
 four = square 2
@@ -180,6 +187,39 @@ four = square 2
 								<li>Always put 'data' last, allows for partial application</li>
 							</ul>
 						</aside>
+					</section>
+
+					<section>
+						<h4>Pattern Matching</h4>
+						<pre><code data-trim data-noescape class="elm">
+case answer of
+  Yes -&gt;
+    "Okay!"
+  No -&gt;
+    "No way!"
+						</code></pre>
+						<pre class="fragment"><code data-trim data-noescape class="elm">
+case callMeMaybe of
+  Just number -&gt;
+    "Crazy!"
+  Nothing -&gt;
+    "Miss you so bad"
+						</code></pre>
+						<aside class="notes">
+							<ul>
+								<li>Must be exhaustive with union types</li>
+							</ul>
+						</aside>
+					</section>
+
+					<section>
+						<h4>Pattern Matching: Functions &amp; Record Fields</h4>
+						<pre><code data-trim data-noescape class="elm">
+dist {x,y} =
+  sqrt (x^2 + y^2)
+
+dist { x = 2, y = 3 }
+						</code></pre>
 					</section>
 				</section>
 
@@ -211,7 +251,7 @@ type alias Model =
     }
 						</code></pre>
 					</section>
-					
+
 					<section>
 						<h4>View Function</h4>
 
@@ -220,6 +260,7 @@ type alias Model =
 								<li>State as input, outputs virtual DOM</li>
 								<li>Program reconciles virtual DOM diff after each render</li>
 								<li>Produced HTML can emit messages as a result of handling DOM events</li>
+								<li>No templates, no JSX. Plain functions!</li>
 							</ul>
 						</aside>
 
@@ -271,13 +312,13 @@ update msg model =
 					<section>
 						<h4>Roll My D20!</h4>
 						<pre><code data-trim data-noescape class="elm">
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -&gt; Model -&gt; (Model, Cmd Msg)
 update msg model =
   case msg of
-    Roll ->
+    Roll -&gt;
       (model, Random.generate NewFace (Random.int 1 20))
 
-    NewFace newFace ->
+    NewFace newFace -&gt;
       (Model newFace, Cmd.none)
 						</code></pre>
 					</section>
@@ -285,43 +326,67 @@ update msg model =
 					<section>
 						<h4>Creating The Command</h4>
 						<pre><code data-trim data-noescape class="elm">
-							Random.generate : (a -> msg) -> Random.Generator a -> Cmd msg
+							Random.generate : (a -&gt; msg) -&gt; Random.Generator a -&gt; Cmd msg
 						</code></pre>
 
 						<div class="fragment">
 
 							<h4>Describing our RNG</h4>
 							<pre><code data-trim data-noescape class="elm">
-							Random.int : Int -> Int -> Random.Generator Int
+							Random.int : Int -&gt; Int -&gt; Random.Generator Int
 						</code></pre>
 						</div>
 					</section>
 
 					<section>
+						<h2>HTTP Commands</h2>
+						<ul>
+							<li class="fragment">HTTP Requests via Commands</li>
+							<li class="fragment">Responses processed by JSON decoders</li>
+						</ul>
+					</section>
+
+					<section>
+						<h4>Request Creation & Sending</h4>
 						<pre><code data-trim data-noescape class="elm">
-type Msg
-    = FocusOn String
-    | FocusResult (Result Dom.Error ())
+getRandomGif : String -&gt; Cmd Msg
+getRandomGif topic =
+  let
+    url =
+      "https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" ++ topic
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        FocusOn id ->
-            ( model, Dom.focus id |> Task.attempt FocusResult )
-
-        FocusResult result ->
-            -- handle success or failure here
-            case result of
-                Err (Dom.NotFound id) ->
-                    -- unable to find dom 'id'
-                Ok () ->
-                    -- successfully focus the dom
+    request =
+      Http.get url decodeGifUrl
+  in
+    Http.send NewGif request
 						</code></pre>
 					</section>
 
+					<section>
+						<h4>JSON Decoding</h4>
+						<pre><code data-trim data-noescape class="elm">
+decodeGifUrl : Decode.Decoder String
+decodeGifUrl =
+  Decode.at ["data", "image_url"] Decode.string
+						</code></pre>
+					</section>
 
+					<section>
+						<h4>Response As Update Message</h4>
+						<pre><code data-trim data-noescape class="elm">
+update : Msg -&gt; Model -&gt; (Model, Cmd Msg)
+update msg model =
+  case msg of
+    MorePlease -&gt;
+      (model, getRandomGif model.topic)
 
-					<!-- TODO: Focus command example -->
+    NewGif (Ok newUrl) -&gt;
+      ( { model | gifUrl = newUrl }, Cmd.none)
+
+    NewGif (Err _) -&gt;
+      (model, Cmd.none)
+						</code></pre>
+					</section>
 				</section>
 
 				<section>
@@ -329,12 +394,154 @@ update msg model =
 						<h2>Subscriptions</h2>
 					</section>
 
-					<!-- TODO: Show time subscription -->
+					<section>
+						<ul>
+							<li>Request update messages when events occur</li>
+							<li class="fragment">Subscriptions determined by model state</li>
+							<li class="fragment">Like commands, are data, not code</li>
+						</ul>
+					</section>
+
+					<section>
+						<h4>Pardon Me, Do You Have The Time?</h4>
+						<pre><code data-trim data-noescape class="elm">
+subscriptions : Model -&gt; Sub Msg
+subscriptions model =
+	case model.started of
+		True -&gt;
+			Time.every second Tick
+		False -&gt;
+			Sub.none
+						</code></pre>
+					</section>
+
+					<section>
+						<h3>WebSocket Events</h3>
+						<pre><code data-trim data-noescape class="elm">
+subscriptions : Model -&gt; Sub Msg
+subscriptions model =
+  WebSocket.listen "ws://echo.websocket.org" NewMessage
+						</code></pre>
+					</section>
 				</section>
 
 				<section>
 					<section>
-						<h2>JavaScript Interop</h2>
+						<h2>Ports</h2>
+					</section>
+
+					<section>
+						<ul>
+							<li>JavaScript Interoperability</li>
+							<li class="fragment">Leverage command and subscription functionality</li>
+						</ul>
+					</section>
+
+					<section>
+						<h4>Elm</h4>
+						<pre><code data-trim data-noescape class="elm">
+port module MyAlerter exposing(..)
+
+port alert : String -&gt; Cmd msg
+-- ...
+update msg model =
+  case msg of
+    AnnoyHitchHiker -&gt;
+      ( model
+      , alert "Hey, wanna hear the most annoying sound in the world?  AAAAAAAHHHHHHH!" )
+						</code></pre>
+
+						<div class="fragment">
+							<h4>JavaScript</h4>
+							<pre><code data-trim data-noescape class="elm">
+							app.ports.alert.subscribe(msg -&gt; alert(msg));
+							</code></pre>
+						</div>
+					</section>
+
+					<section>
+						<h4>Elm</h4>
+						<pre><code data-trim data-noescape class="elm">
+port module MyAlerter exposing(..)
+
+port mouseMoved : ((x,y) -&gt; msg) -&gt; Sub msg
+-- ...
+update msg model =
+  case msg of
+    AnnoyUser -&gt;
+      ( model
+      , alert "Hey, wanna hear the most annoying sound in the world?  AAAAAAAHHHHHHH!" )
+						</code></pre>
+
+						<div class="fragment">
+							<h4>JavaScript</h4>
+							<pre><code data-trim data-noescape class="elm">
+							app.ports.alert.subscribe(msg -&gt; alert(msg));
+							</code></pre>
+						</div>
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h2>Development Tools</h2>
+						<pre class="fragment"><code>$ npm install -g elm</code></pre>
+					</section>
+
+					<section>
+						<h4>elm-repl</h4>
+
+						<aside class="notes">
+							<ul>
+								<li>Simple Run-Evaluate Print Loop</li>
+								<il>Helpful for language basics, no Elm Architecture</il>
+							</ul>
+						</aside>
+						<pre><code data-trim data-noescape>
+peter@suspect:~ $ elm repl
+---- elm-repl 0.18.0 -----------------------------------------------------------
+ :help for help, :exit to exit, more at &lt;https://github.com/elm-lang/elm-repl&gt;
+--------------------------------------------------------------------------------
+&gt; t = { x = 0, y = 1 }
+{ x = 0, y = 1 } : { x : number, y : number1 }
+&gt; t.x
+0 : number
+&gt; t1 = { t | x = 2 }
+{ x = 2, y = 1 } : { y : number1, x : number }
+&gt;
+						</code></pre>
+					</section>
+
+					<section>
+						<h4>elm-package</h4>
+						<ul>
+							<li>Similar to npm/yarn, but for Elm packages/code</li>
+							<li class="fragment">When publishing, does semantic version checks!</li>
+						</ul>
+					</section>
+
+					<section>
+						<h4>elm-reactor</h4>
+						<ul>
+							<li>Simple host environment for evaluating Elm</li>
+							<li class="fragment"><em>Not</em> for production use (No CSS, bundling, etc)</li>
+						</ul>
+					</section>
+
+					<section>
+						<h4>elm-make</h4>
+						<ul>
+							<li>Compiles Elm into JS/HTML</li>
+							<li class="fragment">More suitable for pure Elm projects</li>
+						</ul>
+					</section>
+
+					<section>
+						<h4>Other Tools</h4>
+						<ul>
+							<li><a href="https://github.com/elm-community/elm-webpack-loader">elm-webpack-loader</a></li>
+							<li><a href="https://github.com/rtfeldman/elm-css">elm-css</a> &amp; <a href="https://github.com/tcoopman/elm-css-webpack-loader">elm-css-webpack-loader</a></li>
+						</ul>
 					</section>
 				</section>
 
@@ -404,10 +611,15 @@ update msg model =
 				</section>
 
 				<section>
+					<h2>Questions?</h2>
+				</section>
+
+				<section>
 					<h3>Links</h3>
 					<ul>
 						<li>Elm - <a href="http://elm-lang.org/">http//elm-lang.org/</a></li>
 						<li>Try Online - <a href="http://elm-lang.org/">http//elm-lang.org/try</a></li>
+						<li>Slides - <a href="https://petejohanson.github.io/nerdsummit-2017-intro-to-elm/">https://petejohanson.github.io/nerdsummit-2017-intro-to-elm/</a></li>
 					</ul>
 				</section>
 			</div>
