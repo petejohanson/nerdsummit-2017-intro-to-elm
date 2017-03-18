@@ -275,7 +275,7 @@ type alias Model =
 						</aside>
 
 				  	<pre><code data-trim data-noescape class="elm">
-view : Int -&gt; Html Msg
+view : Model -&gt; Html Msg
 view model =
   div []
     [ button [ onClick Decrement ] [ text "-" ]
